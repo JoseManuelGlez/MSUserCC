@@ -1,6 +1,8 @@
 package org.example.msusercc.service;
 
+import org.example.msusercc.controller.requests.CreateUserRequest;
 import org.example.msusercc.controller.responses.BaseResponse;
+import org.example.msusercc.controller.responses.CreateUserResponse;
 import org.example.msusercc.controller.responses.GetUserResponse;
 import org.example.msusercc.entity.User;
 import org.example.msusercc.repository.IUserRepository;
@@ -16,6 +18,7 @@ public class UserServiceImpl implements IUserService {
 
     @Override
     public BaseResponse get(String id) {
+
         User user = findOneAndEnsureExist(id);
 
         return BaseResponse.builder()
@@ -31,6 +34,16 @@ public class UserServiceImpl implements IUserService {
                 .orElseThrow(() -> new RuntimeException("The user does not exist"));
     }
 
+    @Override
+    public BaseResponse create(CreateUserRequest request) {
+        User user = from(request);
+        return BaseResponse.builder()
+                .data(from(repository.save(user)))
+                .message("User created correctly")
+                .success(Boolean.TRUE)
+                .httpStatus(HttpStatus.CREATED).build();
+    }
+
     private GetUserResponse from(User user){
         GetUserResponse response = new GetUserResponse();
 
@@ -38,6 +51,16 @@ public class UserServiceImpl implements IUserService {
         response.setName(user.getName());
         response.setEmail(user.getEmail());
         response.setPassword(user.getPassword());
+
+        return response;
+    }
+
+    private User from(CreateUserRequest request){
+        User response = new User();
+
+        response.setName(request.getName());
+        response.setPassword(request.getPassword());
+        response.setEmail(request.getEmail());
 
         return response;
     }
